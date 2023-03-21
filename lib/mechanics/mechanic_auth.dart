@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:garage_app/constant.dart';
 import 'package:garage_app/driver/home.dart';
-import 'package:garage_app/mechanics/mechanic_auth.dart';
+import 'package:garage_app/mechanics/dashboard.dart';
 
 // **************** Login starts here ***************************
-class LoginScreen extends StatefulWidget {
+class Mechanic_LoginScreen extends StatefulWidget {
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<Mechanic_LoginScreen> createState() => _Mechanic_LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _Mechanic_LoginScreenState extends State<Mechanic_LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController userEmailController = TextEditingController();
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 //   height: 30,
                 // ),
                 Text(
-                  'Login\nTo your Account',
+                  'Mechanic | Admin Panel\nLogin to your Account',
                   style: TextStyle(fontSize: 16, color: Colors.black),
                 ),
                 const SizedBox(
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => RegisterScreen()));
+                                builder: (context) => MechanicRegisterScreen()));
                       },
                       child: Text(
                         'Register here!',
@@ -238,48 +238,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 //   height: 16,
                 // ),
                 // _contentServices(context),
-
-                const SizedBox(
-                  height: 30,
-                ),
-
-                Align(
-                alignment: Alignment.bottomCenter,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      child: Text(
-                        "Garage Operator Login? ",
-                        style: TextStyle(
-                          color: Color(0xFF666666),
-                          
-                          fontStyle: FontStyle.normal,
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Mechanic_LoginScreen()))
-                      },
-                      child: Container(
-                        child: Text(
-                          "Login here",
-                          style: TextStyle(
-                            color: Color(0xFFf7418c),
-                            
-                            fontStyle: FontStyle.normal,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               ],
             ),
           ),
@@ -362,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
     //     // });
 
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            context, MaterialPageRoute(builder: (context) => DashboardScreen()));
     //   } else if (res.statusCode == 400) {
     //     print('hhh');
     //     // setState(() {
@@ -383,12 +341,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
 // **************** Register starts here ***************************
 
-class RegisterScreen extends StatefulWidget {
+class MechanicRegisterScreen extends StatefulWidget {
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<MechanicRegisterScreen> createState() => _MechanicRegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _MechanicRegisterScreenState extends State<MechanicRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController userEmailController = TextEditingController();
@@ -455,7 +413,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // ),
                 Center(
                   child: Text(
-                    'Register New Account',
+                    'Mechanic | Admin Panel\nRegister New Account',
                     style: TextStyle(fontSize: 16, color: Colors.black),
                   ),
                 ),
@@ -656,7 +614,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => LoginScreen()));
+                                builder: (context) => Mechanic_LoginScreen()));
                       },
                       child: Text(
                         'Login here!',
@@ -790,7 +748,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     //     // });
 
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => LoginScreen()));
+            context, MaterialPageRoute(builder: (context) => Mechanic_LoginScreen()));
     //   } else if (res.statusCode == 400) {
     //     print('hhh');
     //     // setState(() {
