@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:garage_app/api/api.dart';
 import 'package:garage_app/constant.dart';
 import 'package:garage_app/driver/home.dart';
 import 'package:garage_app/mechanics/dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // **************** Login starts here ***************************
 class Mechanic_LoginScreen extends StatefulWidget {
@@ -40,7 +44,7 @@ class _Mechanic_LoginScreenState extends State<Mechanic_LoginScreen> {
               
                 Center(
                   child: Text(
-                    'Garage Service',
+                    'Online Garage System',
                     style: TextStyle(fontSize: 26, color: Colors.black),
                   ),
                 ),
@@ -93,7 +97,7 @@ class _Mechanic_LoginScreenState extends State<Mechanic_LoginScreen> {
                     children: [
                       TextFormField(
                         controller: userEmailController,
-                        validator: validateEmail,
+                        validator: validateUsername,
                         // keyboardType: TextInputType.phone,
                         style: Theme.of(context).textTheme.bodyMedium,
                         decoration: InputDecoration(
@@ -105,7 +109,7 @@ class _Mechanic_LoginScreenState extends State<Mechanic_LoginScreen> {
                             ),
                             borderSide: BorderSide.none,
                           ),
-                          hintText: 'Email',
+                          hintText: 'Username',
                           hintStyle: const TextStyle(
                             color: AppColor.kTextColor1,
                             fontSize: 14,
@@ -256,6 +260,17 @@ class _Mechanic_LoginScreenState extends State<Mechanic_LoginScreen> {
       return null;
   }
 
+
+  String? validateUsername(String? value) {
+// Indian Mobile number are of 10 digit only
+    if (value!.length == 0)
+      return 'Username Field must not be empty';
+    // else if(value.length < 8) 
+    //   return 'Password must be of 8 or more digit';
+    else
+      return null;
+  }
+
   String? validatePassword(String? value) {
 // Indian Mobile number are of 10 digit only
     if (value!.length == 0)
@@ -289,46 +304,46 @@ class _Mechanic_LoginScreenState extends State<Mechanic_LoginScreen> {
     // var cellphone = code + number;
 
 // *************************************************
-    // var data = {
-    //   'email': userEmailController.text,
-    //   'password': userPasswordController.text,
-    // };
+    var data = {
+      'username': userEmailController.text,
+      'password': userPasswordController.text,
+    };
 
-    // print(data);
+    print(data);
 
-    // var res = await CallApi().loginRequest(data, 'api/auth/normal-login');
-    // if (res == null) {
-    //   // setState(() {
-    //   //   _isLoading = false;
-    //   //   // _not_found = true;
-    //   // });
-    //   // showSnack(context, 'No Network!');
-    // } else {
-    //   var body = json.decode(res!.body);
-    //   print(body);
+    var res = await CallApi().authenticatedPostRequest(data, 'auth/login');
+    if (res == null) {
+      // setState(() {
+      //   _isLoading = false;
+      //   // _not_found = true;
+      // });
+      // showSnack(context, 'No Network!');
+    } else {
+      var body = json.decode(res!.body);
+      print(body);
 
-    //   if (res.statusCode == 200) {
-    //     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    //     // localStorage.setString("token", body['token']);
-    //     localStorage.setString("user", json.encode(body['user']));
-    //     localStorage.setString("token", json.encode(body['token']));
-    //     localStorage.setString("stationary", json.encode(body['stationary']));
-    //     // localStorage.setString("phone_number", userNumberController.text);
+      if (res.statusCode == 200) {
+        SharedPreferences localStorage = await SharedPreferences.getInstance();
+        // localStorage.setString("token", body['token']);
+        localStorage.setString("user", json.encode(body));
+        localStorage.setString("token", json.encode(body['tokens']['access']));
+        // localStorage.setString("stationary", json.encode(body['stationary']));
+        // localStorage.setString("phone_number", userNumberController.text);
 
-    //     // setState(() {
-    //     //   _isLoading = false;
-    //     // });
+        // setState(() {
+        //   _isLoading = false;
+        // });
 
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => DashboardScreen()));
-    //   } else if (res.statusCode == 400) {
-    //     print('hhh');
-    //     // setState(() {
-    //     //   _isLoading = false;
-    //     //   _not_found = true;
-    //     // });
-    //   } else {}
-    // }
+      } else if (res.statusCode == 400) {
+        print('hhh');
+        // setState(() {
+        //   _isLoading = false;
+        //   _not_found = true;
+        // });
+      } else {}
+    }
 
     // ignore: avoid_print
   }
@@ -349,6 +364,7 @@ class MechanicRegisterScreen extends StatefulWidget {
 class _MechanicRegisterScreenState extends State<MechanicRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  TextEditingController userNameController = TextEditingController();
   TextEditingController userEmailController = TextEditingController();
   TextEditingController userPhoneController = TextEditingController();
   TextEditingController userPasswordController = TextEditingController();
@@ -388,7 +404,7 @@ class _MechanicRegisterScreenState extends State<MechanicRegisterScreen> {
 
                 Center(
                   child: Text(
-                    'Garage Service',
+                    'Online Garage System',
                     style: TextStyle(fontSize: 26, color: Colors.black),
                   ),
                 ),
@@ -442,7 +458,7 @@ class _MechanicRegisterScreenState extends State<MechanicRegisterScreen> {
                   child: Column(
                     children: [
                       TextFormField(
-                        controller: userEmailController,
+                        controller: userNameController,
                         validator: validateUsername,
                         // keyboardType: TextInputType.phone,
                         style: Theme.of(context).textTheme.bodyMedium,
@@ -715,48 +731,49 @@ class _MechanicRegisterScreenState extends State<MechanicRegisterScreen> {
 
 
 // *******************************************************
-    // var data = {
-    //   'email': userEmailController.text,
-    //   'phone_number': userPhoneController.text,
-    //   'password': userPasswordController.text,
-    //   'role': '2',
+    var data = {
+      'username': userNameController.text,
+      'email': userEmailController.text,
+      'password': userPasswordController.text,
+      'phone': userPhoneController.text,
+      'type': 'garage',
       
-    // };
+    };  
 
-    // print(data);
+    print(data);
 
-    // var res = await CallApi().loginRequest(data, 'api/auth/normal-register');
-    // if (res == null) {
-    //   // setState(() {
-    //   //   _isLoading = false;
-    //   //   // _not_found = true;
-    //   // });
-    //   // showSnack(context, 'No Network!');
-    // } else {
-    //   var body = json.decode(res!.body);
-    //   print(body);
+    var res = await CallApi().authenticatedPostRequest(data, 'auth/register');
+    if (res == null) {
+      // setState(() {
+      //   _isLoading = false;
+      //   // _not_found = true;
+      // });
+      // showSnack(context, 'No Network!');
+    } else {
+      var body = json.decode(res!.body);
+      print(body);
 
-    //   if (res.statusCode == 200) {
-    //     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    //     // localStorage.setString("token", body['token']);
-    //     localStorage.setString("user", json.encode(body['user']));
-    //     localStorage.setString("token", json.encode(body['token']));
-    //     // localStorage.setString("phone_number", userNumberController.text);
+      if (res.statusCode == 200) {
+        SharedPreferences localStorage = await SharedPreferences.getInstance();
+        // localStorage.setString("token", body['token']);
+        localStorage.setString("user", json.encode(body));
+        localStorage.setString("token", json.encode(body['access']));
+        // localStorage.setString("phone_number", userNumberController.text);
 
-    //     // setState(() {
-    //     //   _isLoading = false;
-    //     // });
+        // setState(() {
+        //   _isLoading = false;
+        // });
 
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => Mechanic_LoginScreen()));
-    //   } else if (res.statusCode == 400) {
-    //     print('hhh');
-    //     // setState(() {
-    //     //   _isLoading = false;
-    //     //   _not_found = true;
-    //     // });
-    //   } else {}
-    // }
+      } else if (res.statusCode == 400) {
+        print('hhh');
+        // setState(() {
+        //   _isLoading = false;
+        //   _not_found = true;
+        // });
+      } else {}
+    }
 
     // ignore: avoid_print
   }
