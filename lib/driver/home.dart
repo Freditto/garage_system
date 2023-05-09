@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:garage_app/api/api.dart';
 import 'package:garage_app/driver/auth.dart';
+import 'package:garage_app/driver/garage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -37,12 +39,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isLocationFound = true;
 
+  BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
+
+  CustomInfoWindowController _customInfoWindowController =
+      CustomInfoWindowController();
+
   @override
   void initState() {
     super.initState();
 
     checkLoginStatus();
     _getUserInfo();
+
+    // fetchGarageListData(context);
 
     rootBundle.loadString('assets/map_style.txt').then((string) {
       _mapStyle = string;
@@ -89,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     print('%%%%%%%%%%%%%%%%%%%%%');
     print(_currentPosition!.latitude.toString());
-
+    print(_currentPosition!.longitude.toString());
 
     return CameraPosition(
         bearing: 192.8334901395799,
@@ -182,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
 //   }).toSet();
 // }
 
-  Future<List<GarageList_Items>> fetchGarageListData(context) async {
+  fetchGarageListData(context) async {
     print(" Inside List of Garages function");
 
     LocationPermission permission;
@@ -202,10 +211,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     print(_currentPosition!.latitude.toString());
 
-    var res = await CallApi().authenticatedGetRequest('nearBy/' +
-        _currentPosition!.latitude.toString().replaceAll('-', 'z') +
-        'x' +
-        _currentPosition!.longitude.toString().replaceAll('-', 'z'));
+    var res = await CallApi().authenticatedGetRequest('nearBy?long=' +
+        _currentPosition!.longitude.toString() +
+        '&lat=' +
+        _currentPosition!.latitude.toString());
 
     print(res);
     if (res != null) {
@@ -214,32 +223,70 @@ class _HomeScreenState extends State<HomeScreen> {
 
       var garageListItensJson = json.decode(res.body);
 
-      List<GarageList_Items> _garageListItems = [];
+      // List<GarageList_Items> _garageListItems = [];
+      Set<Marker> _markerListItems = {};
 
       for (var f in garageListItensJson) {
-        GarageList_Items garageList_items = GarageList_Items(
-          f["id"].toString(),
-          f["name"].toString(),
-          f["distance"].toString(),
-          f["description"].toString(),
-          f["latitude"].toString(),
-          f["longitude"].toString(),
-        );
-        _garageListItems.add(garageList_items);
-      }
-      print(_garageListItems.length);
+        // GarageList_Items garageList_items = GarageList_Items(
+        //   f["id"].toString(),
+        //   f["name"].toString(),
+        //   f["distance"].toString(),
+        //   f["description"].toString(),
+        //   f["latitude"].toString(),
+        //   f["longitude"].toString(),
+        // );
+        print("chochote unachotaka_________");
 
-      return _garageListItems;
+        Marker my_mark = Marker(
+          markerId: MarkerId(f['id'].toString()),
+          position: LatLng(double.parse(f['latitude'].toString()),
+              double.parse(f['longitude'].toString())),
+          icon: markerIcon,
+          onTap: () {
+            print('pin tapped ');
+             
+            // InfoWindow(
+            //   title: 'Marker Title Second ',
+            //   snippet: 'My Custom Subtitle',
+            // );
+          },
+          infoWindow: InfoWindow(
+            title: f['name'],
+            snippet: f['description'],
+            onTap: () {
+            // InfoWindow clicked
+            Navigator.push(
+              context, MaterialPageRoute(builder: (context) => GarageDetailScreen(
+                f["id"].toString(),
+                f["name"].toString(),
+                f["description"].toString(),
+
+                userData['user_id'].toString(),
+                 _currentPosition!.latitude.toString(),
+                  _currentPosition!.longitude.toString(),
+              )));
+            }
+          ),
+        );
+        _markerListItems.add(my_mark);
+      }
+
+      print('Marj=sdsd');
+      print(_markerListItems);
+
+      setState(() {
+        allMarkers = _markerListItems;
+      });
+
+      return _markerListItems;
     } else {
-      return [];
+      return {};
     }
   }
 
-  // Set<Marker> allMarkers = Set<Marker>();
+  var allMarkers = <Marker>{};
 
-  dynamic allMarkers = <MarkerId, Marker>{};
-
-  // Set<Marker> allMarkers = {};
+  List<Marker> _markers = <Marker>[];
 
   @override
   Widget build(BuildContext context) {
@@ -415,50 +462,49 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // body: FutureBuilder(
-      //   future: fetchGarageListData(context),
-      //   builder: (context, AsyncSnapshot snapshot) {
-      //     // if (!snapshot.hasData) {
-      //     //   return CircularProgressIndicator();
-      //     // }
-      //     List<dynamic> parsedJson = jsonDecode(snapshot.data);
-      //     allMarkers = parsedJson.map((element) {
-      //       return Marker(
-      //           markerId: MarkerId(element['id']),
-      //           position: LatLng(element['latitude'], element['longitude']));
-      //     }).toList();
-
-      //     return GoogleMap(
-      //       mapType: MapType.normal,
-      //       initialCameraPosition: _kGooglePlex,
-      //       markers: Set.from(allMarkers),
-      //       onMapCreated: (GoogleMapController controller) {
-      //         _controller.complete(controller);
-      //         // mapController.setMapStyle(_mapStyle);
-      //       },
-      //     );
-      //   },
-      // ),
+     
 
       body: GoogleMap(
-        mapType: MapType.normal,
-        initialCameraPosition: _kGooglePlex,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-          // mapController.setMapStyle(_mapStyle);
-        },
-      ),
+          mapType: MapType.normal,
+          initialCameraPosition: _kGooglePlex,
+          onMapCreated: (GoogleMapController controller) {
+            _controller.complete(controller);
+            // mapController.setMapStyle(_mapStyle);
+          },
+          markers: allMarkers
+          // markers:{
+          //   Marker(
+          //     markerId: const MarkerId("marker1"),
+          //     position: const LatLng(-6.8061802, 39.2860074),
+          //     onTap: () {},
+          //     draggable: true,
+          //     onDragEnd: (value) {
+          //       // value is the new position
+          //     },
+          //     icon: markerIcon,
+          //     infoWindow: InfoWindow(
+          //   title: 'Marker Title Second ',
+          //   snippet: 'My Custom Subtitle',
+          // ),
+          //   ),
+          //   Marker(
+          //     markerId: const MarkerId("marker2"),
+          //     position: const LatLng(-6.8061802, 38.2860074),
+          //     onTap: () {},
+          //     draggable: true,
+          //     onDragEnd: (value) {
+          //       // value is the new position
+          //     },
+          //     icon: markerIcon,
+          //   ),
+          // },
+          ),
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           print(userData);
-          // _goToTheLocation();
-          nearbyGarage();
-          // Add your onPressed code here!
-          //  Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //       builder: (context) => Personal_CV_Screen()));
+          _goToTheLocation();
+         
         },
         label: const Text('Locate me'),
         icon: const Icon(Icons.gps_fixed_outlined),
@@ -471,34 +517,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final GoogleMapController controller = await _controller.future;
     controller
         .animateCamera(CameraUpdate.newCameraPosition(await getLocation()));
+
+    fetchGarageListData(context);
   }
 
-  nearbyGarage() {
-    return FutureBuilder(
-      future: fetchGarageListData(context),
-      builder: (context, AsyncSnapshot snapshot) {
-        // if (!snapshot.hasData) {
-        //   return CircularProgressIndicator();
-        // }
-        List<dynamic> parsedJson = jsonDecode(snapshot.data);
-        allMarkers = parsedJson.map((element) {
-          return Marker(
-              markerId: MarkerId(element['id']),
-              position: LatLng(element['latitude'], element['longitude']));
-        }).toList();
-
-        return GoogleMap(
-          mapType: MapType.normal,
-          initialCameraPosition: _kGooglePlex,
-          markers: Set.from(allMarkers),
-          onMapCreated: (GoogleMapController controller) {
-            _controller.complete(controller);
-            // mapController.setMapStyle(_mapStyle);
-          },
-        );
-      },
-    );
-  }
+  
 }
 
 class GarageList_Items {
