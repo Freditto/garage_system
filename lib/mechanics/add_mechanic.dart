@@ -7,6 +7,8 @@ import 'package:garage_app/driver/auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AddMechanicScreen extends StatefulWidget {
+  const AddMechanicScreen({super.key});
+
   @override
   State<AddMechanicScreen> createState() => _AddMechanicScreenState();
 }
@@ -29,7 +31,7 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("token") == null) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+          context, MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
   }
 
@@ -58,8 +60,8 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
     var res =
         await CallApi().authenticatedPostRequest(data, 'registerEngineer');
     if (res == null) {
-      ScaffoldMessenger.of(this.context)
-          .showSnackBar(SnackBar(content: Text("Invalid credentials")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Invalid credentials")));
     } else {
       var body = json.decode(res!.body);
       print(body);
@@ -80,10 +82,10 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
-        title: Text('Add Mechanics', style: TextStyle(color: Colors.black)),
+        title: const Text('Add Mechanics', style: TextStyle(color: Colors.black)),
         actions: <Widget>[
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.more_vert,
               color: Colors.black,
             ),
@@ -93,8 +95,8 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
       ),
       body: SafeArea(
         child: ListView(
-          padding: EdgeInsets.symmetric(horizontal: 32),
-          physics: BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          physics: const BouncingScrollPhysics(),
           children: [
             Center(
               child: Stack(
@@ -252,7 +254,7 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
                 //   ),
                 // );
               },
-              child: Text(
+              child: const Text(
                 'Save Mechanic',
                 style: TextStyle(color: Colors.white),
               ),
@@ -264,7 +266,7 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
   }
 
   Widget buildImage() {
-    final image = AssetImage("assets/user1.jpg");
+    const image = AssetImage("assets/user1.jpg");
 
     return ClipOval(
       child: Material(

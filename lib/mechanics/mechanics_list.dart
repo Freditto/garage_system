@@ -7,6 +7,8 @@ import 'package:garage_app/mechanics/add_mechanic.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MechanicsListScreen extends StatefulWidget {
+  const MechanicsListScreen({super.key});
+
   @override
   State<MechanicsListScreen> createState() => _MechanicsListScreenState();
 }
@@ -25,7 +27,7 @@ class _MechanicsListScreenState extends State<MechanicsListScreen> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("token") == null) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+          context, MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
   }
 
@@ -41,29 +43,28 @@ class _MechanicsListScreenState extends State<MechanicsListScreen> {
   Future<List<EngineerList_Items>> fetchEngineerListData(context) async {
     print(" Inside List of Engineers function");
 
-    var res = await CallApi().authenticatedGetRequest('viewEngineers/' + userData['garage']['id'].toString());
+    var res = await CallApi().authenticatedGetRequest('viewEngineers/${userData['garage']['id']}');
 
     // print(res);
     if (res != null) {
       print(res.body);
-      var body = json.decode(res.body);
 
       var engineerListItensJson = json.decode(res.body);
 
-      List<EngineerList_Items> _engineerListItems = [];
+      List<EngineerList_Items> engineerListItems = [];
 
       for (var f in engineerListItensJson) {
-        EngineerList_Items engineerList_items = EngineerList_Items(
+        EngineerList_Items engineerlistItems = EngineerList_Items(
           f["id"].toString(),
           f["username"].toString(),
           f["phone"].toString(),
           f["description"].toString(),
         );
-        _engineerListItems.add(engineerList_items);
+        engineerListItems.add(engineerlistItems);
       }
-      print(_engineerListItems.length);
+      print(engineerListItems.length);
 
-      return _engineerListItems;
+      return engineerListItems;
     } else {
       return [];
     }
@@ -77,10 +78,10 @@ class _MechanicsListScreenState extends State<MechanicsListScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
-        title: Text('All Mechanics', style: TextStyle(color: Colors.black)),
+        title: const Text('All Mechanics', style: TextStyle(color: Colors.black)),
         actions: <Widget>[
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.more_vert,
               color: Colors.black,
             ),
@@ -100,7 +101,7 @@ class _MechanicsListScreenState extends State<MechanicsListScreen> {
         onPressed: () {
           // Add your onPressed code here!
           Navigator.push(context,
-              MaterialPageRoute(builder: (context) => AddMechanicScreen()));
+              MaterialPageRoute(builder: (context) => const AddMechanicScreen()));
         },
         label: const Text('Add'),
         icon: const Icon(Icons.add),
@@ -114,7 +115,6 @@ class _MechanicsListScreenState extends State<MechanicsListScreen> {
       future: fetchEngineerListData(context),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          var data = snapshot.data!;
           return ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
@@ -137,12 +137,12 @@ class _MechanicsListScreenState extends State<MechanicsListScreen> {
                   child: ListTile(
                     title: Text(snapshot.data![index].username!,),
                     subtitle: Text(snapshot.data![index].description!,),
-                    leading: Icon(Icons.person_2_outlined),
-                    trailing: Icon(Icons.more_vert)),
+                    leading: const Icon(Icons.person_2_outlined),
+                    trailing: const Icon(Icons.more_vert)),
                       );
               });
         } else {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
       },
     );

@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -6,7 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class RequestMapScreen extends StatefulWidget {
   String? latitude, longitude;
 
-  RequestMapScreen(this.latitude, this.longitude);
+  RequestMapScreen(this.latitude, this.longitude, {super.key});
 
   @override
   State<RequestMapScreen> createState() => _RequestMapScreenState();
@@ -71,7 +73,7 @@ class _RequestMapScreenState extends State<RequestMapScreen> {
               // value is the new position
             },
             icon: markerIcon,
-            infoWindow: InfoWindow(
+            infoWindow: const InfoWindow(
               title: 'Marker Title Second ',
               snippet: 'My Custom Subtitle',
             ),

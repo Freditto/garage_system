@@ -10,6 +10,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GarageLocationScreen extends StatefulWidget {
+  const GarageLocationScreen({super.key});
+
   @override
   State<GarageLocationScreen> createState() => _GarageLocationScreenState();
 }
@@ -35,7 +37,7 @@ class _GarageLocationScreenState extends State<GarageLocationScreen> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("token") == null) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+          context, MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
   }
 
@@ -56,20 +58,12 @@ class _GarageLocationScreenState extends State<GarageLocationScreen> {
     zoom: 14.4746,
   );
 
-  static const CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
 
-  String? _mapStyle;
   LatLng? _currentPosition;
 
   bool _isLocationFound = true;
 
   Future<CameraPosition> getLocation() async {
-    LocationPermission permission;
-    permission = await Geolocator.requestPermission();
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
@@ -95,7 +89,7 @@ class _GarageLocationScreenState extends State<GarageLocationScreen> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Center(child: Text('Additional Information')),
+            title: const Center(child: Text('Additional Information')),
             content: SingleChildScrollView(
               child: Form(
                 key: _formKey,
@@ -174,11 +168,11 @@ class _GarageLocationScreenState extends State<GarageLocationScreen> {
                       // },
                       height: 40,
                       elevation: 0,
-                      splashColor: Color.fromRGBO(104, 57, 183, 100),
+                      splashColor: const Color.fromRGBO(104, 57, 183, 100),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
-                      color: Color.fromRGBO(104, 57, 183, 100),
-                      child: Center(
+                      color: const Color.fromRGBO(104, 57, 183, 100),
+                      child: const Center(
                         child: Text(
                           "Save",
                           style: TextStyle(color: Colors.white, fontSize: 18),
@@ -211,8 +205,8 @@ class _GarageLocationScreenState extends State<GarageLocationScreen> {
 
     var res = await CallApi().authenticatedPostRequest(data, 'registerGarage');
     if (res == null) {
-      ScaffoldMessenger.of(this.context)
-          .showSnackBar(SnackBar(content: Text("Data Not saved!")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Data Not saved!")));
     } else {
       var body = json.decode(res!.body);
       print(body);
@@ -223,8 +217,8 @@ class _GarageLocationScreenState extends State<GarageLocationScreen> {
         localStorage.setString("garage", json.encode(body));
         // localStorage.setString("token", json.encode(body['token']));
 
-        ScaffoldMessenger.of(this.context)
-            .showSnackBar(SnackBar(content: Text("Data saved Successfuly!")));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Data saved Successfuly!")));
       } else if (res.statusCode == 400) {
       } else {}
     }
@@ -256,7 +250,7 @@ class _GarageLocationScreenState extends State<GarageLocationScreen> {
                 _additonal_Info_Dialog(context);
               }),
               label: const Text('Continue'),
-              backgroundColor: Color.fromRGBO(104, 57, 183, 100),
+              backgroundColor: const Color.fromRGBO(104, 57, 183, 100),
               icon: const Icon(Icons.gps_fixed),
             ),
     );

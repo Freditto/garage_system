@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // **************** Login starts here ***************************
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -41,8 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(
                   height: 18,
                 ),
+
+
+                Image.asset('assets/meclogo.png'),
               
-                Center(
+                const Center(
                   child: Text(
                     'Online Garage System',
                     style: TextStyle(fontSize: 26, color: Colors.black),
@@ -67,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // const SizedBox(
                 //   height: 30,
                 // ),
-                Text(
+                const Text(
                   'Login\nTo your Account',
                   style: TextStyle(fontSize: 16, color: Colors.black),
                 ),
@@ -177,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     //   ),
                     // );
                   },
-                  child: Text(
+                  child: const Text(
                     'Continue',
                     style: TextStyle(color: Colors.white),
                   ),
@@ -210,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => RegisterScreen()));
+                                builder: (context) => const RegisterScreen()));
                       },
                       child: Text(
                         'Register here!',
@@ -254,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Container(
-                      child: Text(
+                      child: const Text(
                         "Garage Operator Login? ",
                         style: TextStyle(
                           color: Color(0xFF666666),
@@ -268,10 +273,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => Mechanic_LoginScreen()))
+                                builder: (context) => const Mechanic_LoginScreen()))
                       },
                       child: Container(
-                        child: Text(
+                        child: const Text(
                           "Login here",
                           style: TextStyle(
                             color: Color(0xFFf7418c),
@@ -296,28 +301,28 @@ class _LoginScreenState extends State<LoginScreen> {
     String pattern =
         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
     RegExp regex = RegExp(pattern);
-    if (!regex.hasMatch(value!))
+    if (!regex.hasMatch(value!)) {
       return 'Enter Valid Email';
-    else
+    } else {
       return null;
+    }
   }
 
 
   String? validateUsername(String? value) {
 // Indian Mobile number are of 10 digit only
-    if (value!.length == 0)
+    if (value!.isEmpty) {
       return 'Username Field must not be empty';
-    // else if(value.length < 8) 
-    //   return 'Password must be of 8 or more digit';
-    else
+    } else {
       return null;
+    }
   }
 
   String? validatePassword(String? value) {
 // Indian Mobile number are of 10 digit only
-    if (value!.length == 0)
+    if (value!.isEmpty) {
       return 'Password Field must not be empty';
-    else if (value.length < 8)
+    } else if (value.length < 8)
       return 'Password must be of 8 or more digit';
     else
       return null;
@@ -377,7 +382,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // });
 
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            context, MaterialPageRoute(builder: (context) => const HomeScreen()));
       } else if (res.statusCode == 400) {
         print('hhh');
         // setState(() {
@@ -399,6 +404,8 @@ class _LoginScreenState extends State<LoginScreen> {
 // **************** Register starts here ***************************
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
@@ -444,7 +451,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   height: 18,
                 ),
 
-                Center(
+                Image.asset('assets/meclogo.png'),
+
+                const Center(
                   child: Text(
                     'Online Garage System',
                     style: TextStyle(fontSize: 26, color: Colors.black),
@@ -469,7 +478,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // const SizedBox(
                 //   height: 30,
                 // ),
-                Center(
+                const Center(
                   child: Text(
                     'Register New Account',
                     style: TextStyle(fontSize: 16, color: Colors.black),
@@ -638,7 +647,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       //   ),
                       // );
                     },
-                    child: Text(
+                    child: const Text(
                       'Register',
                       style: TextStyle(color: Colors.white),
                     ),
@@ -672,7 +681,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => LoginScreen()));
+                                builder: (context) => const LoginScreen()));
                       },
                       child: Text(
                         'Login here!',
@@ -720,35 +729,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String pattern =
         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
     RegExp regex = RegExp(pattern);
-    if (!regex.hasMatch(value!))
+    if (!regex.hasMatch(value!)) {
       return 'Enter Valid Email';
-    else
+    } else {
       return null;
+    }
   }
 
   String? validateMobile(String? value) {
 // Indian Mobile number are of 10 digit only
-    if (value!.length != 10)
+    if (value!.length != 10) {
       return 'Mobile Number must be of 10 digit';
-    else
+    } else {
       return null;
+    }
   }
 
   String? validateUsername(String? value) {
 // Indian Mobile number are of 10 digit only
-    if (value!.length == 0)
+    if (value!.isEmpty) {
       return 'Username Field must not be empty';
-    // else if(value.length < 8) 
-    //   return 'Password must be of 8 or more digit';
-    else
+    } else {
       return null;
+    }
   }
 
   String? validatePassword(String? value) {
 // Indian Mobile number are of 10 digit only
-    if (value!.length == 0)
+    if (value!.isEmpty) {
       return 'Password Field must not be empty';
-    else if(value.length < 8) 
+    } else if(value.length < 8) 
       return 'Password must be of 8 or more digit';
     else
       return null;
@@ -807,7 +817,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // });
 
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => LoginScreen()));
+            context, MaterialPageRoute(builder: (context) => const LoginScreen()));
 
       } else if (res.statusCode == 400) {
         print('hhh');

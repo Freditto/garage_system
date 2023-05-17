@@ -4,15 +4,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garage_app/api/api.dart';
 import 'package:garage_app/driver/auth.dart';
-import 'package:garage_app/mechanics/add_mechanic.dart';
 import 'package:garage_app/mechanics/mechanics_list.dart';
 import 'package:garage_app/mechanics/request_map.dart';
 import 'package:garage_app/mechanics/setgarage.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
@@ -22,6 +22,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   TextEditingController garageNameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
 
+  var status;
+
   @override
   void initState() {
     super.initState();
@@ -30,15 +32,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // checkGarageStatus();
     _getGarageInfo();
-
-    
   }
 
   checkLoginStatus() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("token") == null) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+          context, MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
   }
 
@@ -68,92 +68,87 @@ class _DashboardScreenState extends State<DashboardScreen> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("garage") == null) {
       Navigator.push(context,
-          MaterialPageRoute(builder: (context) => GarageLocationScreen()));
+          MaterialPageRoute(builder: (context) => const GarageLocationScreen()));
     }
   }
 
   Future<List<RequestList_Items>> fetchRequestListData(context) async {
     print(" Inside List of Request function");
 
-    var res = await CallApi().authenticatedGetRequest('garageFeeds/' + userData['garage']['id'].toString());
+    var res = await CallApi().authenticatedGetRequest(
+        'garageFeeds/${userData['garage']['id']}');
 
     // print(res);
     if (res != null) {
       print(res.body);
-      var body = json.decode(res.body);
 
       var requestListItensJson = json.decode(res.body)['request'];
 
-      List<RequestList_Items> _requestListItems = [];
+      List<RequestList_Items> requestListItems = [];
 
       for (var f in requestListItensJson) {
-        RequestList_Items requestList_items = RequestList_Items(
+        RequestList_Items requestlistItems = RequestList_Items(
           f["feed_id"].toString(),
           f["driver_id"].toString(),
           f["phone"].toString(),
           f["latitude"].toString(),
           f["longitude"].toString(),
-
-          
+          f['is_received'].toString(),
         );
-        _requestListItems.add(requestList_items);
+        requestListItems.add(requestlistItems);
       }
-      print(_requestListItems.length);
+      print(requestListItems.length);
 
-      return _requestListItems;
+      return requestListItems;
     } else {
       return [];
     }
   }
 
-
   Future<List<AppointmentList_Items>> fetchAppointmentListData(context) async {
     print(" Inside List of Appointment function");
 
-    var res = await CallApi().authenticatedGetRequest('garageFeeds/' + userData['garage']['id'].toString());
+    var res = await CallApi().authenticatedGetRequest(
+        'garageFeeds/${userData['garage']['id']}');
 
     // print(res);
     if (res != null) {
       print(res.body);
-      var body = json.decode(res.body);
 
       var appointmentListItensJson = json.decode(res.body)['appointment'];
 
-      List<AppointmentList_Items> _appointmentListItems = [];
+      List<AppointmentList_Items> appointmentListItems = [];
 
       for (var f in appointmentListItensJson) {
-        AppointmentList_Items appointmentList_items = AppointmentList_Items(
+        AppointmentList_Items appointmentlistItems = AppointmentList_Items(
           f["feed_id"].toString(),
           f["driver_id"].toString(),
           f["phone"].toString(),
           f["appointment_date"].toString(),
           f["created_at"].toString(),
           f["is_received"].toString(),
-
-          
         );
-        _appointmentListItems.add(appointmentList_items);
+        appointmentListItems.add(appointmentlistItems);
       }
-      print(_appointmentListItems.length);
+      print(appointmentListItems.length);
 
-      return _appointmentListItems;
+      return appointmentListItems;
     } else {
       return [];
     }
   }
-
 
   _logoutDialog(BuildContext context) {
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Logout'),
+            title: const Text('Logout'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Container(
-                  child: Text(
+                  child: const Text(
                     "Are you sure you want to logout",
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -162,7 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 15,
                 ),
                 Row(
@@ -180,11 +175,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => LoginScreen()));
+                                    builder: (context) => const LoginScreen()));
                           },
-                          child: Text('Yes')),
+                          child: const Text('Yes')),
 
-                      SizedBox(
+                      const SizedBox(
                         width: 30,
                       ),
 
@@ -192,7 +187,118 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           onTap: () {
                             Navigator.of(context).pop();
                           },
-                          child: Text('No')),
+                          child: const Text('No')),
+                      // onPressed: () {
+                      //   Navigator.of(context).pop();
+                      // }
+                    ])
+              ],
+            ),
+          );
+        });
+  }
+
+  _StatusDialog(BuildContext context, String id) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Accept Request'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  child: const Text(
+                    "Are you sure you want to accept this request",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      InkWell(
+                          onTap: () async {
+                            Navigator.of(context).pop();
+
+                            var res = await CallApi()
+                                .authenticatedGetRequest('toYesRequest/$id');
+
+                            setState(() {});
+                          },
+                          child: const Text('Yes')),
+
+                      const SizedBox(
+                        width: 30,
+                      ),
+
+                      InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('No')),
+                      // onPressed: () {
+                      //   Navigator.of(context).pop();
+                      // }
+                    ])
+              ],
+            ),
+          );
+        });
+  }
+
+
+  _StatusAppointmentDialog(BuildContext context, String id) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Accept Request'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  child: const Text(
+                    "Are you sure you want to accept this request",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      InkWell(
+                          onTap: () async {
+                            Navigator.of(context).pop();
+
+                            var res = await CallApi()
+                                .authenticatedGetRequest('toYesAppointment/$id');
+
+                            setState(() {});
+                          },
+                          child: const Text('Yes')),
+
+                      const SizedBox(
+                        width: 30,
+                      ),
+
+                      InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('No')),
                       // onPressed: () {
                       //   Navigator.of(context).pop();
                       // }
@@ -214,58 +320,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: EdgeInsets.zero,
             children: [
               DrawerHeader(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     // color: Colors.blue,
                     ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const <Widget>[
-                    CircleAvatar(
+                  children: <Widget>[
+                    const CircleAvatar(
                       backgroundColor: Colors.white70,
                       minRadius: 40.0,
                       child: CircleAvatar(
                         radius: 40.0,
-                        backgroundImage: AssetImage("assets/user1.jpg"),
+                        backgroundImage: AssetImage("assets/meclogo.png"),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
-                    Text(
-                      'Leonardo Palmeiro',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      'Flutter Developer',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
+                    userData == null
+                        ? const Text(
+                            '',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          )
+                        : Text(
+                            userData['username'].toString(),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                    userData == null
+                        ? const Text(
+                            '',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                            ),
+                          )
+                        : Text(
+                            userData['phone'],
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                            ),
+                          ),
                   ],
                 ),
               ),
               ListTile(
-                leading: Icon(
+                leading: const Icon(
                   Icons.group_outlined,
                 ),
                 title: const Text('My Mechanics'),
                 onTap: () {
                   Navigator.pop(context);
-    
+
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => MechanicsListScreen()));
+                          builder: (context) => const MechanicsListScreen()));
                 },
               ),
               ListTile(
-                leading: Icon(
+                leading: const Icon(
                   Icons.contact_mail_outlined,
                 ),
                 title: const Text('Contact Us'),
@@ -275,7 +398,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
               ListTile(
-                leading: Icon(
+                leading: const Icon(
                   Icons.feedback_outlined,
                 ),
                 title: const Text('Feedback'),
@@ -284,13 +407,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
               ListTile(
-                leading: Icon(
+                leading: const Icon(
                   Icons.logout_outlined,
                 ),
                 title: const Text('Logout'),
                 onTap: () {
                   Navigator.pop(context);
-    
+
                   _logoutDialog(context);
                 },
               ),
@@ -308,14 +431,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           //          icon: Icon(Icons.menu),
           //          onPressed: () => Scaffold.of(context).openDrawer()
           //    )),
-    
+
           // title: Text('Recruitment Portal',
           //     style: TextStyle(fontSize: 16, color: Colors.black) ,
           // ),
           actions: [
             Padding(
               padding: const EdgeInsets.only(left: 16, right: 16),
-              child: Container(
+              child: SizedBox(
                 height: 70,
                 width: MediaQuery.of(context).size.width - 32,
                 child: Row(
@@ -324,11 +447,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Builder(
                         builder: (context) => // Ensure Scaffold is in context
                             IconButton(
-                                icon: Icon(Icons.menu),
+                                icon: const Icon(Icons.menu),
                                 onPressed: () =>
                                     Scaffold.of(context).openDrawer())),
-                    Text(
-                      'Garage Service | Admin',
+                    const Text(
+                      'Online Garage System | Admin',
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     Row(
@@ -359,7 +483,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                           ),
                         ),
-    
+
                         // Padding(
                         //   padding: const EdgeInsets.only(top: 4, right: 8.0),
                         //   child: IconButton(
@@ -383,7 +507,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )
           ],
         ),
-    
+
         // body: SafeArea(child: _requestListWidget()),
 
         body: Column(
@@ -409,15 +533,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Tab(
                     text: "Appointments",
                   ),
-                 
                 ],
               ),
             ),
             Expanded(
               child: TabBarView(
                 children: [
-                  
-                  
                   _requestListWidget(),
                   _appointmentListWidget(),
                   // Online_ProductsScreen(),
@@ -431,9 +552,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
-
-    
-  
   }
 
   Widget _requestListWidget() {
@@ -441,7 +559,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       future: fetchRequestListData(context),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          var data = snapshot.data!;
           return ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
@@ -456,31 +573,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             builder: (context) => RequestMapScreen(
                                   snapshot.data![index].latitude!,
                                   snapshot.data![index].longitude!,
-                                  
-                                  
                                 )));
                   },
+                  onLongPress: () {
+                    _StatusDialog(
+                      context,
+                      snapshot.data![index].feed_id!,
+                    );
+                  },
                   child: ListTile(
-                    title: Text(snapshot.data![index].phone!,),
-                    subtitle: Text(snapshot.data![index].driver_id!,),
-                    leading: Icon(Icons.person_2_outlined),
-                    trailing: Icon(Icons.more_vert)),
-                      );
+                      title: Text(
+                        snapshot.data![index].phone!,
+                      ),
+                      subtitle: Row(
+                        children: [
+                          Container(
+                            height: 30,
+                            // width: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(
+                                snapshot.data![index].is_received!,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Text(snapshot.data![index].driver_id!,),
+                      leading: const Icon(Icons.person_2_outlined),
+                      trailing: const Icon(Icons.more_vert)),
+                );
               });
         } else {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
       },
     );
   }
-
 
   Widget _appointmentListWidget() {
     return FutureBuilder<List<AppointmentList_Items>>(
       future: fetchAppointmentListData(context),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          var data = snapshot.data!;
           return ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
@@ -489,41 +630,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
               itemBuilder: (BuildContext context, int index) {
                 return InkWell(
                   onTap: () {
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => DetailStationsry(
-                    //               snapshot.data![index].id!,
-                    //               snapshot.data![index].username!,
-                    //               snapshot.data![index].phone!,
-                    //               snapshot.data![index].description!,
-                                  
-                    //             )));
+                     _StatusAppointmentDialog(
+                      context,
+                      snapshot.data![index].feed_id!,
+                    );
                   },
+
+                 
                   child: ListTile(
-                    title: Text(snapshot.data![index].phone!,),
-                    subtitle: Text(snapshot.data![index].appointment_date!,),
-                    leading: Icon(Icons.person_2_outlined),
-                    trailing: Icon(Icons.more_vert)),
-                      );
+                      title: Text(
+                        snapshot.data![index].phone!,
+                      ),
+                      subtitle: Row(
+                        children: [
+                          Text(
+                            timeago
+                              .format(
+                                  DateTime.parse(snapshot.data![index].appointment_date!
+                                      .toString()),
+                                  locale: 'en_short')
+                              .toString(),
+                          
+                          ),
+
+                          const SizedBox(width: 10,),
+
+                          Container(
+                            height: 30,
+                            // width: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(
+                                snapshot.data![index].is_received!,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      leading: const Icon(Icons.person_2_outlined),
+                      trailing: const Icon(Icons.more_vert)),
+                );
               });
         } else {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
       },
     );
   }
 }
 
-
 class AppointmentList_Items {
-  final String? feed_id, driver_id, phone, appointment_date, created_at, is_received;
+  final String? feed_id,
+      driver_id,
+      phone,
+      appointment_date,
+      created_at,
+      is_received;
 
-  AppointmentList_Items(this.feed_id, this.driver_id, this.phone, this.appointment_date, this.created_at, this.is_received);
+  AppointmentList_Items(this.feed_id, this.driver_id, this.phone,
+      this.appointment_date, this.created_at, this.is_received);
 }
 
 class RequestList_Items {
-  final String? feed_id, driver_id, phone, latitude, longitude;
+  final String? feed_id, driver_id, phone, latitude, longitude, is_received;
 
-  RequestList_Items(this.feed_id, this.driver_id, this.phone, this.latitude, this.longitude);
+  RequestList_Items(this.feed_id, this.driver_id, this.phone, this.latitude,
+      this.longitude, this.is_received);
 }

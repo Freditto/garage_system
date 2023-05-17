@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:garage_app/api/api.dart';
 import 'package:garage_app/driver/auth.dart';
 import 'package:garage_app/driver/garage.dart';
+import 'package:garage_app/driver/notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -31,18 +33,14 @@ class _HomeScreenState extends State<HomeScreen> {
       tilt: 59.440717697143555,
       zoom: 19.151926040649414);
 
-  String? _mapStyle;
 
   var userData;
 
   LatLng? _currentPosition;
 
-  bool _isLocationFound = true;
 
   BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
 
-  CustomInfoWindowController _customInfoWindowController =
-      CustomInfoWindowController();
 
   @override
   void initState() {
@@ -54,7 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
     // fetchGarageListData(context);
 
     rootBundle.loadString('assets/map_style.txt').then((string) {
-      _mapStyle = string;
     });
   }
 
@@ -62,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("token") == null) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+          context, MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
   }
 
@@ -81,8 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<CameraPosition> getLocation() async {
-    LocationPermission permission;
-    permission = await Geolocator.requestPermission();
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
@@ -93,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _currentPosition = location;
-      _isLocationFound = false;
     });
 
     print('%%%%%%%%%%%%%%%%%%%%%');
@@ -112,12 +106,12 @@ class _HomeScreenState extends State<HomeScreen> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Logout'),
+            title: const Text('Logout'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Container(
-                  child: Text(
+                  child: const Text(
                     "Are you sure you want to logout",
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -126,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 15,
                 ),
                 Row(
@@ -144,11 +138,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => LoginScreen()));
+                                    builder: (context) => const LoginScreen()));
                           },
-                          child: Text('Yes')),
+                          child: const Text('Yes')),
 
-                      SizedBox(
+                      const SizedBox(
                         width: 30,
                       ),
 
@@ -156,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () {
                             Navigator.of(context).pop();
                           },
-                          child: Text('No')),
+                          child: const Text('No')),
                       // onPressed: () {
                       //   Navigator.of(context).pop();
                       // }
@@ -194,8 +188,6 @@ class _HomeScreenState extends State<HomeScreen> {
   fetchGarageListData(context) async {
     print(" Inside List of Garages function");
 
-    LocationPermission permission;
-    permission = await Geolocator.requestPermission();
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
@@ -206,25 +198,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _currentPosition = location;
-      _isLocationFound = false;
     });
 
     print(_currentPosition!.latitude.toString());
 
-    var res = await CallApi().authenticatedGetRequest('nearBy?long=' +
-        _currentPosition!.longitude.toString() +
-        '&lat=' +
-        _currentPosition!.latitude.toString());
+    var res = await CallApi().authenticatedGetRequest('nearBy?long=${_currentPosition!.longitude}&lat=${_currentPosition!.latitude}');
 
     print(res);
     if (res != null) {
       print(res.body);
-      var body = json.decode(res.body);
 
       var garageListItensJson = json.decode(res.body);
 
       // List<GarageList_Items> _garageListItems = [];
-      Set<Marker> _markerListItems = {};
+      Set<Marker> markerListItems = {};
 
       for (var f in garageListItensJson) {
         // GarageList_Items garageList_items = GarageList_Items(
@@ -237,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // );
         print("chochote unachotaka_________");
 
-        Marker my_mark = Marker(
+        Marker myMark = Marker(
           markerId: MarkerId(f['id'].toString()),
           position: LatLng(double.parse(f['latitude'].toString()),
               double.parse(f['longitude'].toString())),
@@ -268,17 +255,17 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           ),
         );
-        _markerListItems.add(my_mark);
+        markerListItems.add(myMark);
       }
 
       print('Marj=sdsd');
-      print(_markerListItems);
+      print(markerListItems);
 
       setState(() {
-        allMarkers = _markerListItems;
+        allMarkers = markerListItems;
       });
 
-      return _markerListItems;
+      return markerListItems;
     } else {
       return {};
     }
@@ -286,7 +273,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   var allMarkers = <Marker>{};
 
-  List<Marker> _markers = <Marker>[];
 
   @override
   Widget build(BuildContext context) {
@@ -297,53 +283,78 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   // color: Colors.blue,
                   ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const <Widget>[
-                  CircleAvatar(
+                children: <Widget>[
+                  const CircleAvatar(
                     backgroundColor: Colors.white70,
                     minRadius: 40.0,
                     child: CircleAvatar(
                       radius: 40.0,
-                      backgroundImage: AssetImage("assets/user1.jpg"),
+                      backgroundImage: AssetImage("assets/driver.png"),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
-                  Text(
-                    'Leonardo Palmeiro',
+                  userData == null ?
+                  const Text(
+                    '',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
+                  )
+                  : Text(
+                    userData['username'].toString(),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
-                  Text(
+
+                  userData == null ?
+
+                  const Text(
                     'Flutter Developer',
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 16,
-                    ),
+                    )
+                  )
+
+                  : Text(
+                  userData['phone'].toString(),
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
                   ),
                 ],
               ),
             ),
             ListTile(
-              leading: Icon(
+              leading: const Icon(
                 Icons.notifications_outlined,
               ),
               title: const Text('Notifications'),
               onTap: () {
                 Navigator.pop(context);
+
+
+                Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => const NotificationScreen()));
+                
               },
             ),
             ListTile(
-              leading: Icon(
+              leading: const Icon(
                 Icons.contact_mail_outlined,
               ),
               title: const Text('Contact Us'),
@@ -353,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             ListTile(
-              leading: Icon(
+              leading: const Icon(
                 Icons.feedback_outlined,
               ),
               title: const Text('Feedback'),
@@ -362,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             ListTile(
-              leading: Icon(
+              leading: const Icon(
                 Icons.logout_outlined,
               ),
               title: const Text('Logout'),
@@ -393,7 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
-            child: Container(
+            child: SizedBox(
               height: 70,
               width: MediaQuery.of(context).size.width - 32,
               child: Row(
@@ -402,10 +413,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   Builder(
                       builder: (context) => // Ensure Scaffold is in context
                           IconButton(
-                              icon: Icon(Icons.menu),
+                              icon: const Icon(Icons.menu),
                               onPressed: () =>
                                   Scaffold.of(context).openDrawer())),
-                  Text(
+                  const Text(
                     'Online Garage System',
                     style: TextStyle(fontSize: 16, color: Colors.black),
                   ),

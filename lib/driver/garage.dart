@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:garage_app/api/api.dart';
 import 'package:intl/intl.dart';
 
@@ -13,21 +12,16 @@ class GarageDetailScreen extends StatefulWidget {
       user_latitude,
       user_longitude;
 
-  GarageDetailScreen(
-    this.id,
-    this.garage_name,
-    this.description,
-    this.user_id,
-    this.user_latitude,
-    this.user_longitude,
-  );
+  const GarageDetailScreen(this.id, this.garage_name, this.description,
+      this.user_id, this.user_latitude, this.user_longitude,
+      {super.key});
 
   @override
   State<GarageDetailScreen> createState() => _GarageDetailScreenState();
 }
 
 class _GarageDetailScreenState extends State<GarageDetailScreen> {
-  static TextEditingController controllerDate = new TextEditingController();
+  static TextEditingController controllerDate = TextEditingController();
 
   request_help() {}
 
@@ -46,8 +40,8 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
     var res =
         await CallApi().authenticatedPostRequest(data, 'createFeedRequest');
     if (res == null) {
-      ScaffoldMessenger.of(this.context)
-          .showSnackBar(SnackBar(content: Text("Invalid credentials")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Invalid credentials")));
     } else {
       var body = json.decode(res!.body);
       print(body);
@@ -55,6 +49,12 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
       if (res.statusCode == 200) {
         // Navigator.push(
         //     context, MaterialPageRoute(builder: (context) => SearchScreen()));
+
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Request Has been sent Successfully")));
+        Navigator.pop(context);
+
+
       } else if (res.statusCode == 400) {
       } else {}
     }
@@ -74,8 +74,8 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
     var res =
         await CallApi().authenticatedPostRequest(data, 'createFeedAppointment');
     if (res == null) {
-      ScaffoldMessenger.of(this.context)
-          .showSnackBar(SnackBar(content: Text("Invalid credentials")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Invalid credentials")));
     } else {
       var body = json.decode(res!.body);
       print(body);
@@ -83,6 +83,10 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
       if (res.statusCode == 200) {
         // Navigator.push(
         //     context, MaterialPageRoute(builder: (context) => SearchScreen()));
+
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Appointment Has been saved Successfully")));
+        Navigator.pop(context);
       } else if (res.statusCode == 400) {
       } else {}
     }
@@ -95,14 +99,14 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Choose Appointment'),
+            title: const Text('Choose Appointment'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 TextFormField(
                     maxLines: 1,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(
                         Icons.calendar_today,
                         color: Colors.grey,
                       ),
@@ -139,7 +143,7 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
                       }
                     },
                     controller: controllerDate),
-                SizedBox(
+                const SizedBox(
                   height: 15,
                 ),
                 Row(
@@ -154,9 +158,9 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
                             //     MaterialPageRoute(
                             //         builder: (context) => LoginScreen()));
                           },
-                          child: Text('Cancel')),
+                          child: const Text('Cancel')),
 
-                      SizedBox(
+                      const SizedBox(
                         width: 30,
                       ),
 
@@ -165,7 +169,7 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
                             _appointment_API();
                             Navigator.of(context).pop();
                           },
-                          child: Text('Send')),
+                          child: const Text('Send')),
                       // onPressed: () {
                       //   Navigator.of(context).pop();
                       // }
@@ -184,7 +188,8 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
         automaticallyImplyLeading: true,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
-        title: Text(widget.garage_name!, style: TextStyle(color: Colors.black)),
+        title: Text(widget.garage_name!,
+            style: const TextStyle(color: Colors.black)),
         // actions: <Widget>[
         //   IconButton(
         //     icon: Icon(
@@ -230,10 +235,15 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
         // )
         // ],
       ),
+      body: Column(
+        children: [
+          Image.asset('assets/meclogo.png'),
+        ],
+      ),
       bottomNavigationBar: Container(
         height: 130,
         // color: Colors.white,
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         // margin: EdgeInsets.only(bottom: 15),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -248,7 +258,7 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -265,7 +275,7 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
                 color: Colors.green,
-                child: Center(
+                child: const Center(
                   child: Text(
                     "Appointment",
                     style: TextStyle(color: Colors.white, fontSize: 18),
@@ -284,7 +294,7 @@ class _GarageDetailScreenState extends State<GarageDetailScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
                 color: Colors.green,
-                child: Center(
+                child: const Center(
                   child: Text(
                     "Request Help",
                     style: TextStyle(color: Colors.white, fontSize: 18),
