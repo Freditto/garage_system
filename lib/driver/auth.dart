@@ -6,6 +6,7 @@ import 'package:garage_app/api/api.dart';
 import 'package:garage_app/constant.dart';
 import 'package:garage_app/driver/home.dart';
 import 'package:garage_app/mechanics/mechanic_auth.dart';
+import 'package:garage_app/utils/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // **************** Login starts here ***************************
@@ -364,7 +365,7 @@ class _LoginScreenState extends State<LoginScreen> {
       //   _isLoading = false;
       //   // _not_found = true;
       // });
-      // showSnack(context, 'No Network!');
+      showSnack(context, 'No Network!');
     } else {
       var body = json.decode(res!.body);
       print(body);
@@ -380,9 +381,16 @@ class _LoginScreenState extends State<LoginScreen> {
         // setState(() {
         //   _isLoading = false;
         // });
+        if (body['msg'] == 'success') {
 
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+              context, MaterialPageRoute(builder: (context) => HomeScreen()));
+          
+        }
+        else {
+          showSnack(context, 'Wrong User name or Password!');
+        }
+
       } else if (res.statusCode == 400) {
         print('hhh');
         // setState(() {

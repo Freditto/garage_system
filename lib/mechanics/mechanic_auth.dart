@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:garage_app/api/api.dart';
 import 'package:garage_app/constant.dart';
 import 'package:garage_app/mechanics/dashboard.dart';
+import 'package:garage_app/mechanics/setgarage.dart';
+import 'package:garage_app/utils/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // **************** Login starts here ***************************
@@ -336,9 +338,22 @@ class _Mechanic_LoginScreenState extends State<Mechanic_LoginScreen> {
         // setState(() {
         //   _isLoading = false;
         // });
+        if (body['msg'] == 'success') {
+          if (body['garage'].isEmpty) {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => GarageLocationScreen()));
+          } else {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => DashboardScreen()));
+            
+          }
+        } else {
+          showSnack(context, 'Wrong User name or Password!');
+        }
 
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const DashboardScreen()));
+        
+
+       
       } else if (res.statusCode == 400) {
         print('hhh');
         // setState(() {

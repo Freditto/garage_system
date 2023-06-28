@@ -51,8 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // fetchGarageListData(context);
 
-    rootBundle.loadString('assets/map_style.txt').then((string) {
-    });
+   
   }
 
   checkLoginStatus() async {
