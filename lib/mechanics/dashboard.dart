@@ -9,6 +9,7 @@ import 'package:garage_app/mechanics/request_map.dart';
 import 'package:garage_app/mechanics/setgarage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -37,8 +38,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   checkLoginStatus() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("token") == null) {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
   }
 
@@ -67,16 +68,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   checkGarageStatus() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("garage") == null) {
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const GarageLocationScreen()));
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const GarageLocationScreen()));
     }
   }
 
   Future<List<RequestList_Items>> fetchRequestListData(context) async {
     print(" Inside List of Request function");
 
-    var res = await CallApi().authenticatedGetRequest(
-        'garageFeeds/${userData['garage']['id']}');
+    var res = await CallApi()
+        .authenticatedGetRequest('garageFeeds/${userData['garage']['id']}');
 
     // print(res);
     if (res != null) {
@@ -108,8 +111,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<List<AppointmentList_Items>> fetchAppointmentListData(context) async {
     print(" Inside List of Appointment function");
 
-    var res = await CallApi().authenticatedGetRequest(
-        'garageFeeds/${userData['garage']['id']}');
+    var res = await CallApi()
+        .authenticatedGetRequest('garageFeeds/${userData['garage']['id']}');
 
     // print(res);
     if (res != null) {
@@ -253,7 +256,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         });
   }
 
-
   _StatusAppointmentDialog(BuildContext context, String id) {
     showDialog(
         context: context,
@@ -283,8 +285,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           onTap: () async {
                             Navigator.of(context).pop();
 
-                            var res = await CallApi()
-                                .authenticatedGetRequest('toYesAppointment/$id');
+                            var res = await CallApi().authenticatedGetRequest(
+                                'toYesAppointment/$id');
 
                             setState(() {});
                           },
@@ -554,6 +556,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// TODO Indirect Phone Call Function
+  // void launchCall(String phone) async {
+  //   String url = "tel:" + phone;
+  //   if (await canLaunch(url)) {
+  //     await launch(url);
+  //   } else {
+  //     print(' Could not launch $url');
+  //   }
+  // }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    await launchUrl(launchUri);
+  }
+
+
   Widget _requestListWidget() {
     return FutureBuilder<List<RequestList_Items>>(
       future: fetchRequestListData(context),
@@ -566,22 +587,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
               //itemCount: ProductModel.items.length,
               itemBuilder: (BuildContext context, int index) {
                 return InkWell(
-                  onTap: () {
-                    Navigator.push(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RequestMapScreen(
+                                    snapshot.data![index].latitude!,
+                                    snapshot.data![index].longitude!,
+                                  )));
+                    },
+                    onLongPress: () {
+                      _StatusDialog(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => RequestMapScreen(
-                                  snapshot.data![index].latitude!,
-                                  snapshot.data![index].longitude!,
-                                )));
-                  },
-                  onLongPress: () {
-                    _StatusDialog(
-                      context,
-                      snapshot.data![index].feed_id!,
-                    );
-                  },
-                  child: ListTile(
+                        snapshot.data![index].feed_id!,
+                      );
+                    },
+                    child: ListTile(
                       title: Text(
                         snapshot.data![index].phone!,
                       ),
@@ -607,8 +628,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       // Text(snapshot.data![index].driver_id!,),
                       leading: const Icon(Icons.person_2_outlined),
-                      trailing: const Icon(Icons.more_vert)),
-                );
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                              onTap: () {
+                                _makePhoneCall(snapshot.data![index].phone!.toString());
+                              },
+                              child: Icon(Icons.phone)),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Icon(Icons.more_vert),
+                        ],
+                      ),
+                    ));
               });
         } else {
           return const Center(child: CircularProgressIndicator());
@@ -630,13 +664,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               itemBuilder: (BuildContext context, int index) {
                 return InkWell(
                   onTap: () {
-                     _StatusAppointmentDialog(
+                    _StatusAppointmentDialog(
                       context,
                       snapshot.data![index].feed_id!,
                     );
                   },
-
-                 
                   child: ListTile(
                       title: Text(
                         snapshot.data![index].phone!,
@@ -645,16 +677,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           Text(
                             timeago
-                              .format(
-                                  DateTime.parse(snapshot.data![index].appointment_date!
-                                      .toString()),
-                                  locale: 'en_short')
-                              .toString(),
-                          
+                                .format(
+                                    DateTime.parse(snapshot
+                                        .data![index].appointment_date!
+                                        .toString()),
+                                    locale: 'en_short')
+                                .toString(),
                           ),
-
-                          const SizedBox(width: 10,),
-
+                          const SizedBox(
+                            width: 10,
+                          ),
                           Container(
                             height: 30,
                             // width: 30,

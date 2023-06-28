@@ -54,6 +54,22 @@ class _RequestMapScreenState extends State<RequestMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.black,
+        // title: const Text('Add Mechanics', style: TextStyle(color: Colors.black)),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(
+              Icons.more_vert,
+              color: Colors.black,
+            ),
+            onPressed: () async {},
+          )
+        ],
+      ),
       body: GoogleMap(
         mapType: MapType.normal,
         initialCameraPosition: _kGooglePlex!,

@@ -14,6 +14,8 @@ class AddMechanicScreen extends StatefulWidget {
 }
 
 class _AddMechanicScreenState extends State<AddMechanicScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   var userData;
 
   TextEditingController nameController = TextEditingController();
@@ -30,8 +32,8 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
   checkLoginStatus() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     if (sharedPreferences.getString("token") == null) {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
   }
 
@@ -74,6 +76,15 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
     }
   }
 
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      // TODO SAVE DATA
+
+      _addMechanic_API();
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +93,8 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
-        title: const Text('Add Mechanics', style: TextStyle(color: Colors.black)),
+        title:
+            const Text('Add Mechanics', style: TextStyle(color: Colors.black)),
         actions: <Widget>[
           IconButton(
             icon: const Icon(
@@ -111,12 +123,12 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
               ),
             ),
             Form(
-              // key: _formKey,
+              key: _formKey,
               child: Column(
                 children: [
                   TextFormField(
                     controller: nameController,
-                    // validator: validateEmail,
+                    validator: validateMechanicname,
                     // keyboardType: TextInputType.phone,
                     style: Theme.of(context).textTheme.bodyMedium,
                     decoration: InputDecoration(
@@ -146,7 +158,7 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
 
                   TextFormField(
                     controller: descriptionController,
-                    // validator: validateEmail,
+                    validator: validateArea,
                     // keyboardType: TextInputType.phone,
                     style: Theme.of(context).textTheme.bodyMedium,
                     decoration: InputDecoration(
@@ -176,8 +188,8 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
 
                   TextFormField(
                     controller: phoneController,
-                    // validator: validateEmail,
-                    // keyboardType: TextInputType.phone,
+                    validator: validatePhone,
+                    keyboardType: TextInputType.phone,
                     style: Theme.of(context).textTheme.bodyMedium,
                     decoration: InputDecoration(
                       filled: true,
@@ -244,8 +256,8 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               onPressed: () {
-                _addMechanic_API();
-                Navigator.pop(context);
+                _submit();
+                
                 // _login();
                 // Navigator.push(
                 //   context,
@@ -280,5 +292,32 @@ class _AddMechanicScreenState extends State<AddMechanicScreen> {
         ),
       ),
     );
+  }
+
+  String? validateMechanicname(String? value) {
+// Indian Mobile number are of 10 digit only
+    if (value!.isEmpty) {
+      return 'Mechanic name Field must not be empty';
+    } else {
+      return null;
+    }
+  }
+
+  String? validateArea(String? value) {
+// Indian Mobile number are of 10 digit only
+    if (value!.isEmpty) {
+      return 'Area of speciality Field must not be empty';
+    } else {
+      return null;
+    }
+  }
+
+  String? validatePhone(String? value) {
+// Indian Mobile number are of 10 digit only
+    if (value!.isEmpty) {
+      return 'Phone Number Field must not be empty';
+    } else {
+      return null;
+    }
   }
 }
